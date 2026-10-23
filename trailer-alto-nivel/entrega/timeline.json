@@ -1,0 +1,348 @@
+{
+ "titulo": "ALTO NÍVEL — por Duda Dias",
+ "duracao_s": 90.0,
+ "fps": 30,
+ "impacto_titulo_s": 86.25,
+ "cortes_voz": [
+  {
+   "origem_in": 0.08,
+   "origem_out": 4.42,
+   "trailer_in": 0.6,
+   "trailer_out": 4.94
+  },
+  {
+   "origem_in": 4.42,
+   "origem_out": 15.1,
+   "trailer_in": 5.29,
+   "trailer_out": 15.97
+  },
+  {
+   "origem_in": 15.15,
+   "origem_out": 26.95,
+   "trailer_in": 15.97,
+   "trailer_out": 27.77
+  },
+  {
+   "origem_in": 27.3,
+   "origem_out": 83.1,
+   "trailer_in": 28.33,
+   "trailer_out": 84.13
+  },
+  {
+   "origem_in": 83.1,
+   "origem_out": 84.7,
+   "trailer_in": 84.48,
+   "trailer_out": 86.08
+  }
+ ],
+ "cenas": {
+  "S01_pergunta": {
+   "in": 0.0,
+   "out": 5.29
+  },
+  "S02_caminho": {
+   "in": 5.29,
+   "out": 15.97
+  },
+  "S03_autoridade": {
+   "in": 15.97,
+   "out": 28.27
+  },
+  "S04_lais": {
+   "in": 28.27,
+   "out": 40.88
+  },
+  "S05_sara": {
+   "in": 40.88,
+   "out": 47.7
+  },
+  "S06_bianca": {
+   "in": 47.7,
+   "out": 52.6
+  },
+  "S07_fernanda": {
+   "in": 52.6,
+   "out": 60.09
+  },
+  "S08_rutilla": {
+   "in": 60.09,
+   "out": 65.96
+  },
+  "S09_decisao": {
+   "in": 65.96,
+   "out": 84.13
+  },
+  "S09b_silencio": {
+   "in": 84.13,
+   "out": 84.48
+  },
+  "S10_bemvinda": {
+   "in": 84.48,
+   "out": 86.25
+  },
+  "S10_titulo": {
+   "in": 86.25,
+   "out": 90.0
+  }
+ },
+ "eventos_sincronia": {
+  "open_line": 0.15,
+  "open_reveal": 0.6,
+  "uma": 3.4,
+  "decisao": 3.5,
+  "q_end": 4.92,
+  "sc2": 5.29,
+  "seguidores": 8.13,
+  "strike": 8.88,
+  "conteudo_end": 9.69,
+  "caminho": 11.07,
+  "estrategia": 12.59,
+  "real": 13.55,
+  "proximo": 14.81,
+  "cut3": 15.97,
+  "tres_anos": 16.14,
+  "n450": 18.6,
+  "marcas": 19.14,
+  "contratos": 21.62,
+  "dolar": 22.32,
+  "seis_meses": 23.12,
+  "operacao": 24.92,
+  "n150": 26.2,
+  "mil": 26.62,
+  "dolares_end": 27.68,
+  "lais": 28.27,
+  "lais_15": 28.6,
+  "parcerias": 30.89,
+  "internacional": 32.69,
+  "us50": 34.07,
+  "semana_end": 35.51,
+  "publi": 35.87,
+  "r450": 39.69,
+  "reais_end": 40.65,
+  "sara": 40.88,
+  "proposta": 41.73,
+  "magalu": 43.01,
+  "analisar": 45.41,
+  "bianca": 47.7,
+  "rumo_phrase": 49.57,
+  "encontrado": 51.41,
+  "rumo": 52.07,
+  "fernanda": 52.6,
+  "comecei": 53.27,
+  "vocesestao": 54.07,
+  "webinar": 55.25,
+  "esforco": 58.13,
+  "rutilla": 60.09,
+  "visao": 60.59,
+  "resultados": 63.07,
+  "distantes_end": 65.71,
+  "final": 65.96,
+  "pronta": 67.87,
+  "saber": 68.97,
+  "ideal": 71.13,
+  "nenhuma": 73.09,
+  "proximo_passo": 76.47,
+  "muda_tudo": 78.37,
+  "elas_comecaram": 79.05,
+  "voce_ta": 81.09,
+  "decidiram": 82.09,
+  "alto_nivel1": 83.39,
+  "blackout": 84.13,
+  "bemvinda": 84.64,
+  "nivel_end": 85.96,
+  "impact": 86.25,
+  "signature": 87.1
+ },
+ "legendas": [
+  {
+   "in": 0.66,
+   "out": 1.98,
+   "texto": "E se a vida que você quiser construir"
+  },
+  {
+   "in": 2.02,
+   "out": 3.86,
+   "texto": "estiver do outro lado de uma decisão"
+  },
+  {
+   "in": 3.9,
+   "out": 4.96,
+   "texto": "que você ainda não tomou?"
+  },
+  {
+   "in": 5.27,
+   "out": 7.45,
+   "texto": "Muita gente ainda acredita que precisa"
+  },
+  {
+   "in": 7.49,
+   "out": 9.89,
+   "texto": "de milhares de seguidores pra viver de conteúdo."
+  },
+  {
+   "in": 9.93,
+   "out": 11.73,
+   "texto": "Mas a verdade é que existe um outro caminho."
+  },
+  {
+   "in": 11.77,
+   "out": 13.79,
+   "texto": "Um caminho mais estratégico, mais real"
+  },
+  {
+   "in": 13.83,
+   "out": 15.94,
+   "texto": "e muito mais próximo do que parece."
+  },
+  {
+   "in": 15.98,
+   "out": 17.34,
+   "texto": "Em três anos de profissão,"
+  },
+  {
+   "in": 17.38,
+   "out": 20.4,
+   "texto": "eu já trabalhei com mais de 450 marcas."
+  },
+  {
+   "in": 20.44,
+   "out": 22.62,
+   "texto": "Hoje, além dos meus contratos em dólar,"
+  },
+  {
+   "in": 22.66,
+   "out": 24.56,
+   "texto": "nos últimos seis meses,"
+  },
+  {
+   "in": 24.6,
+   "out": 27.79,
+   "texto": "a nossa operação já faturou\nmais de 150 mil dólares."
+  },
+  {
+   "in": 28.49,
+   "out": 30.25,
+   "texto": "Estou há 15 dias sendo mentorada por eles."
+  },
+  {
+   "in": 30.29,
+   "out": 31.97,
+   "texto": "Eu já fechei duas parcerias,"
+  },
+  {
+   "in": 32.01,
+   "out": 33.19,
+   "texto": "sendo uma internacional,"
+  },
+  {
+   "in": 33.23,
+   "out": 35.41,
+   "texto": "ganhando 50 dólares por semana,"
+  },
+  {
+   "in": 35.45,
+   "out": 38.67,
+   "texto": "e uma publi que eu fechei\nprospectando a empresa,"
+  },
+  {
+   "in": 38.71,
+   "out": 40.79,
+   "texto": "ganhando 450 reais."
+  },
+  {
+   "in": 40.83,
+   "out": 43.57,
+   "texto": "A Sara recebeu uma proposta de parceria\ncom a Magazine Luiza"
+  },
+  {
+   "in": 43.61,
+   "out": 47.65,
+   "texto": "e procurou direção para analisar\na oportunidade de forma certa."
+  },
+  {
+   "in": 47.69,
+   "out": 49.23,
+   "texto": "A Bianca ainda estava na primeira aula"
+  },
+  {
+   "in": 49.27,
+   "out": 52.45,
+   "texto": "e já sentia que finalmente\ntinha encontrado um rumo."
+  },
+  {
+   "in": 52.49,
+   "out": 55.01,
+   "texto": "E eu posso dizer que eu comecei\nexatamente onde vocês estão, tá?"
+  },
+  {
+   "in": 55.05,
+   "out": 55.95,
+   "texto": "Num webinar da Duda."
+  },
+  {
+   "in": 55.99,
+   "out": 58.57,
+   "texto": "Com a orientação certa deles\ne com o seu esforço,"
+  },
+  {
+   "in": 58.61,
+   "out": 59.83,
+   "texto": "gente, as coisas acontecem."
+  },
+  {
+   "in": 59.87,
+   "out": 62.61,
+   "texto": "E quando a visão certa encontra execução,"
+  },
+  {
+   "in": 62.65,
+   "out": 65.85,
+   "texto": "os resultados começam a deixar\nde parecer distantes."
+  },
+  {
+   "in": 65.89,
+   "out": 68.47,
+   "texto": "Talvez você ainda ache\nque precisa estar pronta,"
+  },
+  {
+   "in": 68.51,
+   "out": 69.73,
+   "texto": "que precisa saber tudo,"
+  },
+  {
+   "in": 69.77,
+   "out": 71.81,
+   "texto": "que precisa esperar o momento ideal."
+  },
+  {
+   "in": 71.85,
+   "out": 74.85,
+   "texto": "Mas a verdade é que\nnenhuma delas começou assim."
+  },
+  {
+   "in": 74.89,
+   "out": 77.51,
+   "texto": "Elas só decidiram dar o próximo passo."
+  },
+  {
+   "in": 77.55,
+   "out": 78.95,
+   "texto": "E é isso que muda tudo."
+  },
+  {
+   "in": 78.99,
+   "out": 81.83,
+   "texto": "Elas começaram exatamente aonde você tá."
+  },
+  {
+   "in": 81.87,
+   "out": 84.15,
+   "texto": "E decidiram viver o alto nível."
+  },
+  {
+   "in": 84.58,
+   "out": 86.1,
+   "texto": "Bem-vinda ao Alto Nível."
+  }
+ ]
+}

@@ -1,0 +1,9 @@
+# material pesado e regenerável
+src/original.mov
+src/*.wav
+ext/
+models/
+out/
+projeto/audio/stems/
+projeto/audio/out/
+__pycache__/
