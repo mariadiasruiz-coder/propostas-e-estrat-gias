@@ -11,7 +11,7 @@ Este diretório tem a produção completa do trailer: o projeto que gera o víde
 
 | Arquivo | O que é |
 |---|---|
-| `ALTO_NIVEL_trailer_4K.mp4` *(513 MB, enviado à parte: grande demais para o Git)* | **Master** 3840×2160, 30 fps, 2700 quadros, H.264 High 5.1, Rec.709 SDR, 45,6 Mb/s, AAC 320 kb/s 48 kHz estéreo, **90,000 s** |
+| `ALTO_NIVEL_trailer_4K_entrega.mp4` *(382 MB, enviado à parte: grande demais para o Git)* | **Master 4K** 3840×2160, 30 fps, 2700 quadros, H.264 High 5.1 em 2 passes, Rec.709 SDR, 34 Mb/s, AAC 320 kb/s 48 kHz estéreo, **90,000 s**. Também foi gerada uma versão a 45 Mb/s, mas ela passa do limite de 400 MiB de envio; `python3 build.py master` a recria. |
 | `ALTO_NIVEL_trailer_1080p.mp4` *(218 MB, enviado à parte)* | 1920×1080 em alta qualidade (CRF 17, ~19 Mb/s), para apresentações e webinars |
 | `entrega/ALTO_NIVEL_trailer_1080p_web.mp4` | 1920×1080, 7,5 Mb/s, 84 MB, *faststart*: para página de vendas, checkout e upload em plataformas |
 
