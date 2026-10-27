@@ -305,7 +305,7 @@ function s1(c, t) {
   c.restore();
   dust(c, t, '170,205,255', .8);
   // phone
-  const pp = E.outExpo(prog(t, .0, .7));
+  const pp = E.outExpo(prog(t, -.18, .7));
   c.save(); c.globalAlpha = pp;
   phone(c, CX - 40, lerp(1250, 1080, pp), 400 * lerp(.8, 1, pp), 820 * lerp(.8, 1, pp), .32 * Math.sin(t * 1.4 + .6) - .1, (cc, x, y, w, h) => {
     chatScreen(cc, x, y, w, h, t, { seed: 5 });
@@ -321,11 +321,10 @@ function s1(c, t) {
   // HUD typography (outside the camera push)
   const ha = 1 - prog(t, 2.42, .2);
   c.save(); c.globalAlpha = ha;
-  headline(c, t, { text: 'UMA IA LENDO\nSEU CHAT?', y: 440, size: 132, start: .04, stagger: .12, dur: .42, style: 'pop', hl: { IA: 'grad' }, exit: 1.62, exitDur: .25 });
+  headline(c, t, { text: 'UMA IA LENDO\nSEU CHAT?', y: 440, size: 132, start: -.3, stagger: .12, dur: .42, style: 'pop', hl: { IA: 'grad' }, exit: 1.62, exitDur: .25 });
   headline(c, t, { text: 'MAS…\nÉ SEGURO?', y: 440, size: 150, start: 1.86, stagger: .13, dur: .4, style: 'pop', hl: { SEGURO: 'gold' } });
   c.restore();
-  flash(c, (1 - prog(t, 0, .12)) * .45, '#cfe3ff');
-  flash(c, (1 - prog(t, .17, .1)) * .35, '#ffffff');
+    if (t >= .17) flash(c, (1 - prog(t, .17, .1)) * .35, '#ffffff');
   // lens fills frame -> black
   flash(c, prog(t, 2.55, .15), '#05060a');
 }

@@ -4,7 +4,7 @@ Vídeo vertical de 24 s para Instagram Reels e TikTok, produzido a partir do mas
 
 | Arquivo | O que é |
 |---|---|
-| `WBT_reels_1080x1920_24s.mp4` | **Arquivo para postar.** 1080×1920, 9:16, 30 fps, H.264 High, ~16 Mbps, áudio AAC estéreo 48 kHz, −14 LUFS |
+| `WBT_reels_1080x1920_24s.mp4` | **Arquivo para postar.** 1080×1920, 9:16, 30 fps, H.264 High (CRF 14, quase sem perdas, ~10 Mbps), áudio AAC estéreo 48 kHz, −14 LUFS |
 | `fonte/` | Código que gera o vídeo quadro a quadro (pode ser editado e renderizado de novo) |
 
 ## Roteiro como foi produzido

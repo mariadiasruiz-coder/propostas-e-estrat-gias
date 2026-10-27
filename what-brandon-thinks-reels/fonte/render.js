@@ -10,6 +10,8 @@ const path = require('path');
   await page.goto('file://' + path.resolve('web/index.html'));
   await page.evaluate(() => window.ready);
   const el = await page.$('#cv');
+  for (const w of [1, 10, 20]) await page.evaluate(t => window.draw(t), w);
+  await page.waitForTimeout(800); await el.screenshot();
   if (mode === 'still') {
     for (const t of process.argv.slice(3).map(Number)) {
       await page.evaluate(t => window.draw(t), t);
