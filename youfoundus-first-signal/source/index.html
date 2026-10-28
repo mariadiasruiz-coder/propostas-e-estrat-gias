@@ -1,0 +1,283 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>The First Signal</title>
+<style>html,body{margin:0;background:#08090B;overflow:hidden}canvas{display:block}</style>
+</head><body>
+<canvas id="gl" width="1080" height="1920"></canvas>
+<script id="vsrc" type="x-shader">#version 300 es
+in vec2 aPos; out vec2 vUv;
+void main(){ vUv = aPos*0.5+0.5; gl_Position = vec4(aPos,0.,1.); }
+</script>
+
+<!-- PASS A : CGI (raymarched Signal Object) -->
+<script id="fsScene" type="x-shader">#version 300 es
+precision highp float;
+in vec2 vUv; out vec4 o;
+uniform vec2 uRes; uniform vec3 uCamPos; uniform mat3 uCamMat; uniform float uTanHalf;
+uniform mat3 uObjRot; uniform vec3 uObjPos;
+uniform float uGap, uSplitRot, uFissure, uFissureGlow, uBeamY, uBeam, uFrames, uTime, uLight, uInner, uTendril;
+
+mat3 rotY(float a){ float c=cos(a), s=sin(a); return mat3(c,0.,-s, 0.,1.,0., s,0.,c); }
+float hash(vec3 p){ p = fract(p*0.3183099+.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float noise(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
+  return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x), mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x), mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z); }
+float smin(float a,float b,float k){ float h=clamp(.5+.5*(b-a)/k,0.,1.); return mix(b,a,h)-k*h*(1.-h); }
+float smax(float a,float b,float k){ return -smin(-a,-b,k); }
+
+float sdShape(vec3 p){
+  float y = p.y;
+  float taper = 1.0 - 0.30*y*y;
+  float th = 0.150*(0.62 + 0.38*cos(y*1.6));
+  vec3 b = vec3(0.42*taper, 0.95, th);
+  float r = 0.05;
+  vec3 q = abs(p) - b + r;
+  float d = length(max(q,0.)) + min(max(q.x,max(q.y,q.z)),0.) - r;
+  d = smax(d, dot(p.xy, vec2(0.70710678)) - 0.80, 0.03);
+  d = smax(d, dot(p.xy, vec2(-0.70710678)) - 0.80, 0.03);
+  return d;
+}
+float tendril(vec3 p, float y, float z, float rad){
+  vec3 pa = p - vec3(-uGap - 0.02, y, z); vec3 ba = vec3(2.*uGap + 0.04, 0., 0.);
+  float h = clamp(dot(pa,ba)/dot(ba,ba),0.,1.);
+  float neck = 0.28 + 0.72*pow(abs(2.*h-1.),2.);
+  return length(pa - ba*h) - rad*neck;
+}
+// x = distance, y = material (0 obsidian, 2 liquid chrome), z = side (-1 left, +1 right, 0 whole)
+vec3 map(vec3 pw){
+  vec3 p = uObjRot*(pw - uObjPos);
+  if(uGap < 1e-5) return vec3(sdShape(p), 0., 0.);
+  vec3 r = rotY(uSplitRot)*(p - vec3(uGap,0.,0.));
+  vec3 l = rotY(-uSplitRot)*(p + vec3(uGap,0.,0.));
+  float sr = sdShape(r), sl = sdShape(l);
+  float dr = max(sr, -r.x), dl = max(sl, l.x);
+  vec3 res = dr < dl ? vec3(dr, (-r.x > sr) ? 2. : 0., 1.) : vec3(dl, (l.x > sl) ? 2. : 0., -1.);
+  if(uTendril > 0.001){
+    float tr = 1e3;
+    float ys[5] = float[5](-0.62, -0.21, 0.08, 0.37, 0.71);
+    float zs[5] = float[5](0.01, -0.03, 0.02, -0.01, 0.03);
+    float th[5] = float[5](0.10, 0.23, 0.15, 0.30, 0.19);
+    for(int i=0;i<5;i++){
+      float rad = 0.045*uTendril*(1. - smoothstep(0.0, th[i], uGap));
+      if(rad > 0.002) tr = min(tr, tendril(p, ys[i], zs[i], rad));
+    }
+    if(tr < 1e2){
+      float d2 = smin(res.x, tr, 0.05);
+      if(tr < res.x + 0.01) res.y = 2.;
+      res.x = d2;
+    }
+  }
+  return res;
+}
+float softRect(vec3 d, vec3 c, vec3 u, vec3 v, vec2 sz, float s){
+  float dc = dot(d,c); if(dc <= 0.) return 0.;
+  float x = dot(d,u)/dc, y = dot(d,v)/dc;
+  float k = sz.x*sz.y/((sz.x+s)*(sz.y+s));
+  return smoothstep(sz.x+s, sz.x-s*0.5, abs(x))*smoothstep(sz.y+s, sz.y-s*0.5, abs(y))*k;
+}
+vec3 basisRect(vec3 d, vec3 c, vec2 sz, float s){
+  c = normalize(c); vec3 u = normalize(cross(vec3(0.,1.,0.), c)); vec3 v = cross(c,u);
+  return vec3(softRect(d,c,u,v,sz,s));
+}
+vec3 env(vec3 d, float rough){
+  float s = 0.012 + rough*0.9;
+  vec3 col = vec3(0.0035,0.0040,0.0048)*(0.6+0.4*d.y);
+  vec3 L = vec3(0.);
+  L += 5.0 * basisRect(d, vec3(-1.0, 0.18, 0.75), vec2(0.05, 1.3), s);   // key strip
+  L += 3.2 * basisRect(d, vec3(1.25, 0.05, -0.2), vec2(0.035, 1.5), s);  // rim strip
+  L += 0.9 * basisRect(d, vec3(0.1, 1.0, 0.3), vec2(0.9, 0.25), s);       // top softbox
+  L += 0.25* basisRect(d, vec3(0.0, -0.3, 1.0), vec2(1.6, 0.6), s*2.);    // faint fill
+  L += 0.75 * basisRect(d, vec3(0.35, 0.45, 1.0), vec2(0.55, 0.40), 0.35+s) * (0.4+0.6*smoothstep(-0.2,0.6,d.y));  // large overhead diffusion panel
+  // travelling signal beam (thin horizontal line of light)
+  L += uBeam * 14.0 * basisRect(d, vec3(0.0, uBeamY, 1.0), vec2(4.0, 0.010), s*0.6);
+  // abstract "screens" sliding by (scene 02)
+  if(uFrames > 0.001){
+    for(int i=0;i<4;i++){
+      float fi = float(i);
+      float x = -1.6 + mod(uTime*0.9 + fi*0.85, 3.4);
+      float y = -0.25 + 0.17*fi;
+      L += uFrames*2.2*basisRect(d, vec3(x, y, 1.0), vec2(0.075, 0.133), s);
+    }
+  }
+  return col + L*vec3(0.94,0.955,1.0);
+}
+void main(){
+  vec2 ndc = vUv*2.-1.;
+  vec3 rd = normalize(uCamMat*vec3(ndc.x*uTanHalf*uRes.x/uRes.y, ndc.y*uTanHalf, 1.));
+  vec3 ro = uCamPos;
+  // bounding sphere
+  float R = 1.15 + uGap*1.3;
+  vec3 oc = ro - uObjPos; float b = dot(oc,rd); float c = dot(oc,oc)-R*R; float h = b*b-c;
+  if(h < 0. || uLight <= 0.0001){ o = vec4(0.,0.,0.,100.); return; }
+  h = sqrt(h); float t = max(-b-h, 0.001); float tmax = -b+h;
+  vec3 hit = vec3(-1.);
+  for(int i=0;i<140;i++){
+    vec3 m = map(ro+rd*t);
+    float eps = 0.00025*t;
+    if(m.x < eps){ hit = m; break; }
+    t += m.x*0.82;
+    if(t > tmax) break;
+  }
+  if(hit.y < -0.5){ o = vec4(0.,0.,0.,100.); return; }
+  vec3 pw = ro+rd*t;
+  float e = 0.0004 + 0.00025*t;
+  vec2 k = vec2(1.,-1.);
+  vec3 n = normalize(k.xyy*map(pw+k.xyy*e).x + k.yyx*map(pw+k.yyx*e).x + k.yxy*map(pw+k.yxy*e).x + k.xxx*map(pw+k.xxx*e).x);
+  vec3 pl = uObjRot*(pw-uObjPos);
+  vec3 nl = uObjRot*n;
+  if(hit.z > 0.5){ pl = rotY(uSplitRot)*(pl - vec3(uGap,0.,0.)); nl = rotY(uSplitRot)*nl; }
+  if(hit.z < -0.5){ pl = rotY(-uSplitRot)*(pl + vec3(uGap,0.,0.)); nl = rotY(-uSplitRot)*nl; }
+
+  vec3 F0; float rough; vec3 emit = vec3(0.); float albedo = 0.;
+  float microAmp = 0.05*smoothstep(3.2, 0.5, t);
+  if(hit.y > 1.5){
+    F0 = vec3(0.90,0.91,0.94); rough = 0.025;
+    // liquid surface: very slow low-frequency undulation
+    n = normalize(n + 0.06*(vec3(noise(pl*7.+uTime*0.6), noise(pl*7.+3.1+uTime*0.6), noise(pl*7.+7.7))-0.5));
+    emit = vec3(0.9,0.92,1.0)*uInner*0.15;
+  } else {
+    float az = abs(nl.z);
+    float edge = smoothstep(0.30,0.48,az)*(1.-smoothstep(0.80,0.93,az));
+    float side = 1.-smoothstep(0.15,0.35,az);
+    float strata = side*(0.5+0.5*sin(pl.y*260.+noise(pl*30.)*2.));
+    F0 = mix(vec3(0.048), vec3(0.66,0.67,0.70), edge);
+    rough = mix(0.30, 0.09, edge) + strata*0.12;
+    albedo = 0.010 + strata*0.008;
+    n = normalize(n + microAmp*(vec3(noise(pl*170.), noise(pl*170.+11.), noise(pl*170.+23.))-0.5)*(1.-edge));
+    float gph = dot(pl.xy, vec2(0.8,0.6))*820.;
+    float gfade = smoothstep(2.4, 0.6, t)*(1.-side)*(1.-edge);
+    n = normalize(n + transpose(uObjRot)*vec3(0.8,0.6,0.)*0.07*sin(gph)*gfade);
+    // fissure of light descending the front face
+    if(uFissureGlow > 0.001 && nl.z > 0.85){
+      float yTop = 0.95 - 1.9*uFissure;
+      float w = 0.0035;
+      float line = (1.-smoothstep(w*0.25, w, abs(pl.x))) * smoothstep(yTop-0.002, yTop+0.02, pl.y);
+      float head = exp(-abs(pl.y - yTop)*40.)*(1.-smoothstep(0.,0.03,abs(pl.x)));
+      emit += vec3(0.95,0.97,1.0)*uFissureGlow*(line*6. + head*3.*step(uFissure,0.999));
+    }
+  }
+  vec3 r = reflect(rd,n);
+  float cosv = clamp(dot(n,-rd),0.,1.);
+  vec3 F = F0 + (1.-F0)*pow(1.-cosv,5.)*(1.-rough*0.8);
+  vec3 col = F*env(r, rough) + albedo*env(n, 1.0) + emit;
+  col *= uLight;
+  o = vec4(col, t);
+}
+</script>
+
+<!-- PASS B : optics, light, typography, finishing -->
+<script id="fsComp" type="x-shader">#version 300 es
+precision highp float;
+in vec2 vUv; out vec4 o;
+uniform sampler2D uScene, uFront, uBack;
+uniform vec2 uRes; uniform float uTime, uFocus, uAperture, uExposure;
+uniform float uGlassX, uGlass;           // camera crossing a sheet of dark optical glass
+uniform vec4 uBeam2D;                    // y(px), headX(px), tail(px), intensity
+uniform vec4 uSweep;                     // x(px), intensity, width, 0
+uniform vec4 uShaft;                     // x(px), width(px), intensity, 0
+uniform float uHaze, uDust, uRing, uTextGlow, uBackOcc, uGrain, uFade, uFrontRefr;
+float hash(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*.1031); p3 += dot(p3, p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+float vnoise(vec2 x){ vec2 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
+  return mix(mix(hash(i),hash(i+vec2(1,0)),f.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x), f.y); }
+float fbm(vec2 p){ float a=0.5, s=0.; for(int i=0;i<4;i++){ s+=a*vnoise(p); p*=2.03; a*=0.5; } return s; }
+vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14),0.,1.); }
+void main(){
+  vec2 px = vUv*uRes;
+  // ---- optical glass sheet: refraction offset near its bevelled edge
+  vec2 refr = vec2(0.); float behind = 0.; float edgeHi = 0.;
+  if(uGlass > 0.001){
+    // edge is a slightly tilted line travelling right -> left
+    float sd = (px.x - uGlassX) + (px.y - 960.)*0.18;
+    behind = smoothstep(-2., 2., -sd);           // region still seen through the glass
+    float bev = exp(-pow(sd/70.,2.));
+    refr = vec2(-1.0, 0.18)*bev*22.*uGlass*(sd/70.) + vec2(behind*7.*uGlass, -behind*3.*uGlass);
+    edgeHi = exp(-abs(sd)/1.6)*0.9 + exp(-abs(sd)/14.)*0.18;
+    edgeHi *= uGlass;
+  }
+  vec2 uvS = (px + refr*0.6)/uRes;
+  vec4 s0 = textureLod(uScene, uvS, 0.);
+  float depth = s0.a;
+  float coc = clamp(abs(depth - uFocus)/max(depth,0.001)*uAperture, 0., 5.);
+  vec3 sc = s0.rgb;
+  if(coc > 0.15){
+    vec3 acc = vec3(0.);
+    for(int i=0;i<6;i++){
+      float a = float(i)*1.0472 + 0.3;
+      vec2 off = vec2(cos(a),sin(a))*exp2(coc)*0.9/uRes;
+      acc += textureLod(uScene, uvS+off, coc*0.85).rgb;
+    }
+    sc = mix(sc, acc/6., smoothstep(0.15, 1.0, coc));
+  }
+  vec3 bloom = textureLod(uScene, uvS, 4.).rgb*0.30 + textureLod(uScene, uvS, 5.5).rgb*0.30 + textureLod(uScene, uvS, 7.).rgb*0.25;
+  vec3 col = sc + max(bloom - 0.02, 0.)*0.55;
+  // ---- atmosphere: very discreet volumetric light from top-left
+  vec2 q = px/uRes.y;
+  float cone = exp(-pow(abs((q.x - 0.10) + (q.y - 1.0)*0.55)*2.6, 2.)) * smoothstep(0.0, 1.0, q.y);
+  col += vec3(0.80,0.82,0.86)*uHaze*0.020*cone*(0.55+0.9*fbm(q*3.0 + vec2(uTime*0.03, -uTime*0.02)));
+  // dust motes (sparse, defocused)
+  if(uDust > 0.001){
+    vec2 g = (px + vec2(uTime*6., -uTime*14.))/140.;
+    vec2 id = floor(g); vec2 f = fract(g)-0.5;
+    float h = hash(id);
+    if(h > 0.86){
+      vec2 c = vec2(hash(id+3.1), hash(id+7.7))-0.5;
+      float r = length(f - c*0.6);
+      col += vec3(0.85,0.87,0.9)*uDust*0.05*smoothstep(0.09, 0.0, r)*(0.4+0.6*hash(id+1.3));
+    }
+  }
+  // lens ghost ring (scene 02)
+  if(uRing > 0.001){
+    vec2 rc = vec2(540. + 240.*sin(uTime*0.9), 1100. - 120.*uTime);
+    float rr = abs(length(px - rc) - 260.);
+    col += vec3(0.8,0.82,0.86)*uRing*0.035*exp(-rr/4.) + vec3(0.8)*uRing*0.008*exp(-rr/40.);
+  }
+  // light shaft from the opening
+  if(uShaft.z > 0.001){
+    float dx = abs(px.x - uShaft.x);
+    col += vec3(0.92,0.94,1.0)*uShaft.z*(exp(-dx/max(uShaft.y,1.))*0.45 + exp(-dx/(uShaft.y*2.+30.))*0.05)*smoothstep(0., 400., px.y)*smoothstep(1920., 1500., px.y);
+  }
+  // signal beam
+  if(uBeam2D.w > 0.001){
+    float dy = abs(px.y - uBeam2D.x);
+    float along = smoothstep(uBeam2D.y - uBeam2D.z, uBeam2D.y, px.x) * (1. - smoothstep(uBeam2D.y, uBeam2D.y + 6., px.x));
+    float headG = exp(-length(vec2((px.x-uBeam2D.y)*0.25, dy))/9.);
+    col += vec3(0.93,0.95,1.0)*uBeam2D.w*(along*(exp(-dy/0.7)*1.6 + exp(-dy/9.)*0.16 + exp(-dy/80.)*0.03) + headG*1.4*uBeam2D.w);
+  }
+  // dissolving light sweep (scene 04)
+  if(uSweep.y > 0.001){
+    float dx = px.x - uSweep.x;
+    col += vec3(0.93,0.95,1.0)*uSweep.y*(exp(-abs(dx)/1.2)*0.9 + exp(-abs(dx)/uSweep.z)*0.18)*smoothstep(500.,700.,px.y)*smoothstep(1330.,1130.,px.y);
+  }
+  col *= uExposure;
+  // glass: darken + highlight
+  col = col*(1. - 0.35*behind*uGlass) + vec3(0.9,0.92,0.95)*edgeHi*0.25;
+  vec3 disp = aces(col);
+  disp = pow(disp, vec3(1./2.2));
+  // grade: cool silver, lifted obsidian black
+  vec3 bg = vec3(8.,9.,11.)/255.;
+  disp = 1. - (1.-bg)*(1.-disp);
+  disp = mix(bg, disp, uFade);
+  // ---- typography (rendered vectors, display space)
+  vec2 uvT = vec2(vUv.x, 1.-vUv.y);
+  vec2 tr = refr*uFrontRefr/uRes; tr.y = -tr.y;
+  vec4 back = texture(uBack, uvT + tr*0.6);
+  float occ = 1.;
+  if(depth < 50.) occ = 1. - uBackOcc;
+  back *= occ;
+  disp = disp*(1.-back.a) + back.rgb;
+  vec4 front = texture(uFront, uvT + tr);
+  // chromatic-free refraction ghost while inside glass
+  disp = disp*(1.-front.a) + front.rgb;
+  float glowT = textureLod(uFront, uvT, 4.).a*0.6 + textureLod(uFront, uvT, 6.).a*0.4 + (textureLod(uBack, uvT, 4.).a*0.6 + textureLod(uBack, uvT, 6.).a*0.4)*occ;
+  disp += vec3(0.85,0.87,0.9)*glowT*uTextGlow*0.10;
+  disp += vec3(0.9,0.92,0.95)*edgeHi*0.10;
+  // vignette + grain (dither, prevents banding on deep blacks)
+  vec2 vq = vUv - 0.5; vq.x *= 0.5625;
+  disp *= 1. - 0.32*smoothstep(0.18, 0.62, length(vq));
+  float gr = (hash(px + fract(uTime*37.)*1000.) + hash(px*1.7 - fract(uTime*13.)*500.) - 1.0);
+  disp += gr*uGrain/255.;
+  o = vec4(clamp(disp,0.,1.), 1.);
+}
+</script>
+
+<script src="film.js"></script>
+</body></html>
